@@ -1,0 +1,325 @@
+Install kubeclt from this url: https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/
+
+
+Install 
+1.Using curl:
+
+If you have curl installed, use this command:
+curl.exe -LO "https://dl.k8s.io/release/v1.34.0/bin/windows/amd64/kubectl.exe"
+
+2 
+
+C:\Users\Achyuth>CertUtil -hashfile eksctl_Windows_amd64.zip SHA256
+SHA256 hash of eksctl_Windows_amd64.zip:
+2b66d3ab2019a47726d997247d55643be7b7bd9d90253bc2733720ac6fe5e334
+CertUtil: -hashfile command completed successfully.
+
+C:\Users\Achyuth\eksctl_Windows_amd64>where eksctl
+C:\Users\Achyuth\eksctl_Windows_amd64\eksctl.exe
+
+C:\Users\Achyuth\eksctl_Windows_amd64>eksctl version
+0.214.0
+
+
+kubectl version --client
+
+aws --version
+C:\Users\Achyuth>aws --version
+aws-cli/2.28.21 Python/3.13.7 Windows/10 exe/AMD64
+
+Access Key
+AKIAQ6NEY4SXERQ2ALPA
+
+Secrity Access key 
+aSbmmH1nWFLeCajf/fvbk884GBLn5bkyF/TFwPqG
+
+us-east-1
+
+
+
+
+
+kubectl get nodes
+
+
+To create the eks cluster
+eksctl create cluster --name sit-cluster --region us-east-1 --fargate
+
+To delete the eks cluster
+eksctl delete cluster --name sit-cluster --region us-east-1
+
+aws eks update-kubeconfig --name sit-cluster --region us-east-1
+
+To create the fargateprofile
+
+eksctl create fargateprofile --cluster sit-cluster --region us-east-1 --name alb-sample-app --namespace game-2048
+
+to deploy the Ingress
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/examples/2048/2048_full.yaml
+
+kubeclt get pod -n game-2048
+
+kubectl get svc -n game-2048
+
+kubectl get ingress -n game-2048
+
+day-22/configure-oidc-connector.md
+
+eksctl utils associate-iam-oidc-provider --cluster sit-cluster --approve 
+
+day-22/alb-controller-add-on.md
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.11.0/docs/install/iam_policy.json
+
+Create IAM Policy
+aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
+
+
+
+To deploy the app
+kubectl apply -f deploy.yaml
+
+To deploy the service
+kubectl apply -f service.yaml
+
+How to setup alb add on
+
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.11.0/docs/install/iam_policy.json
+
+
+Create IAM Policy
+aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document file://iam_policy.json
+
+Create IAM Role
+eksctl create iamserviceaccount --cluster=sit-cluster --namespace=kube-system --name=aws-load-balancer-controller --role-name AmazonEKSLoadBalancerControllerRole --attach-policy-arn=arn:aws:iam::065306944686:policy/AWSLoadBalancerControllerIAMPolicy --approve
+
+
+Deploy ALB controller
+helm repo add eks https://aws.github.io/eks-charts
+
+'helm' is not recognized as an internal or external command,
+operable program or batch file.
+
+Update the repo
+helm repo update eks
+'helm' is not recognized as an internal or external command,
+operable program or batch file.
+
+Downlaod and install the helm https://get.helm.sh/helm-canary-windows-amd64.zip
+
+Add to PATH Environment Variable
+helm version
+
+C:\Users\Achyuth\windows-amd64>helm version
+version.BuildInfo{Version:"v4.0+unreleased", GitCommit:"bd29e5edc2a0104e15181580f0752dd5a900c75a", GitTreeState:"clean", GoVersion:"go1.24.6"}
+
+
+C:\Users\Achyuth\windows-amd64>helm repo add eks https://aws.github.io/eks-charts
+"eks" has been added to your repositories
+
+
+C:\Users\Achyuth\windows-amd64>helm repo update eks
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "eks" chart repository
+Update Complete. ⎈Happy Helming!⎈
+
+
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=sit-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller --set region=us-east-1 --set vpcId=vpc-083199f0769880ad2 
+
+C:\Users\Achyuth\windows-amd64>helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=sit-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller --set region=us-east-1 --set vpcId=vpc-083199f0769880ad2
+NAME: aws-load-balancer-controller
+LAST DEPLOYED: Tue Sep  2 00:30:25 2025
+NAMESPACE: kube-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+AWS Load Balancer controller installed!
+
+
+kubectl get deploy -n kube-system aws-load-balancer-controller
+
+
+to debug
+kubectl get deploy -n kube-system metrics-server
+kubectl edit deploy -n kube-system metrics-server
+
+
+to delete the helm (Dont execute)
+helm delete aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system
+
+
+C:\Users\Achyuth>kubectl get ingress -n game-2048
+NAME           CLASS   HOSTS   ADDRESS                                                                  PORTS   AGE
+ingress-2048   alb     *       k8s-game2048-ingress2-ec64081896-176461752.us-east-1.elb.amazonaws.com   80      49m
+
+
+
+http://k8s-game2048-ingress2-ec64081896-176461752.us-east-1.elb.amazonaws.com/
+
+
+
+
+
+
+
+
+
+
+=============================================================================================================================================================
+cmds 
+
+
+
+
+
+
+
+
+
+C:\Users\Achyuth\eksctl_Windows_amd64>aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
+{
+    "Policy": {
+        "PolicyName": "AWSLoadBalancerControllerIAMPolicy",
+        "PolicyId": "ANPAQ6NEY4SXGOM3MIB4S",
+        "Arn": "arn:aws:iam::065306944686:policy/AWSLoadBalancerControllerIAMPolicy",
+        "Path": "/",
+        "DefaultVersionId": "v1",
+        "AttachmentCount": 0,
+        "PermissionsBoundaryUsageCount": 0,
+        "IsAttachable": true,
+        "CreateDate": "2025-09-01T18:38:12+00:00",
+        "UpdateDate": "2025-09-01T18:38:12+00:00"
+    }
+}
+
+
+C:\Users\Achyuth\eksctl_Windows_amd64>eksctl create iamserviceaccount --cluster=sit-cluster --namespace=kube-system --name=aws-load-balancer-controller --role-name AmazonEKSLoadBalancerControllerRole --attach-policy-arn=arn:aws:iam::065306944686:policy/AWSLoadBalancerControllerIAMPolicy --approve
+2025-09-02 00:12:46 [ℹ]  1 iamserviceaccount (kube-system/aws-load-balancer-controller) was included (based on the include/exclude rules)
+2025-09-02 00:12:46 [!]  serviceaccounts that exist in Kubernetes will be excluded, use --override-existing-serviceaccounts to override
+2025-09-02 00:12:47 [ℹ]  1 task: {
+    2 sequential sub-tasks: {
+        create IAM role for serviceaccount "kube-system/aws-load-balancer-controller",
+        create serviceaccount "kube-system/aws-load-balancer-controller",
+    } }2025-09-02 00:12:47 [ℹ]  building iamserviceaccount stack "eksctl-sit-cluster-addon-iamserviceaccount-kube-system-aws-load-balancer-controller"
+2025-09-02 00:12:47 [ℹ]  deploying stack "eksctl-sit-cluster-addon-iamserviceaccount-kube-system-aws-load-balancer-controller"
+2025-09-02 00:12:48 [ℹ]  waiting for CloudFormation stack "eksctl-sit-cluster-addon-iamserviceaccount-kube-system-aws-load-balancer-controller"
+2025-09-02 00:13:19 [ℹ]  waiting for CloudFormation stack "eksctl-sit-cluster-addon-iamserviceaccount-kube-system-aws-load-balancer-controller"
+2025-09-02 00:13:20 [ℹ]  created serviceaccount "kube-system/aws-load-balancer-controller"
+
+C:\Users\Achyuth\eksctl_Windows_amd64>helm repo add eks https://aws.github.io/eks-charts
+'helm' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\Achyuth\eksctl_Windows_amd64>helm repo update eks
+'helm' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\Achyuth\eksctl_Windows_amd64>helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=sit-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller --set region=us-east-1 --set vpcId=vpc-083199f0769880ad2
+'helm' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\Achyuth\eksctl_Windows_amd64>winget install Helm.Helm
+'winget' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\Achyuth\eksctl_Windows_amd64>winget install Helm.Helm
+'winget' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\Achyuth\eksctl_Windows_amd64>winget install Helm.Helm
+'winget' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\Achyuth\eksctl_Windows_amd64>helm version
+'helm' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\Achyuth\eksctl_Windows_amd64>cd ..
+
+C:\Users\Achyuth>cd windows-amd64
+
+C:\Users\Achyuth\windows-amd64>helm version
+version.BuildInfo{Version:"v4.0+unreleased", GitCommit:"bd29e5edc2a0104e15181580f0752dd5a900c75a", GitTreeState:"clean", GoVersion:"go1.24.6"}
+
+C:\Users\Achyuth\windows-amd64>helm repo add eks https://aws.github.io/eks-charts
+"eks" has been added to your repositories
+
+C:\Users\Achyuth\windows-amd64>helm repo update eks
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "eks" chart repository
+Update Complete. ⎈Happy Helming!⎈
+
+C:\Users\Achyuth\windows-amd64>helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=sit-cluster --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller --set region=us-east-1 --set vpcId=vpc-083199f0769880ad2
+NAME: aws-load-balancer-controller
+LAST DEPLOYED: Tue Sep  2 00:30:25 2025
+NAMESPACE: kube-system
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+TEST SUITE: None
+NOTES:
+AWS Load Balancer controller installed!
+
+C:\Users\Achyuth\windows-amd64>kubectl get deployment -n kube-system aws-load-balancer-controller
+'kubectl' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\Achyuth\windows-amd64>cd ..
+
+C:\Users\Achyuth>kubectl get deployment -n kube-system aws-load-balancer-controller
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+aws-load-balancer-controller   2/2     2            2           75s
+
+C:\Users\Achyuth>kubectl get deploy -n kube-system
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+aws-load-balancer-controller   2/2     2            2           3m10s
+coredns                        2/2     2            2           71m
+metrics-server                 0/2     2            0           71m
+
+C:\Users\Achyuth>kubectl get deploy -n kube-system
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+aws-load-balancer-controller   2/2     2            2           4m5s
+coredns                        2/2     2            2           72m
+metrics-server                 0/2     2            0           72m
+
+C:\Users\Achyuth>kubectl get deploy -n kube-system -w
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+aws-load-balancer-controller   2/2     2            2           4m14s
+coredns                        2/2     2            2           72m
+metrics-server                 0/2     2            0           72m
+
+C:\Users\Achyuth>kubectl get deploy -n kube-system
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+aws-load-balancer-controller   2/2     2            2           7m57s
+coredns                        2/2     2            2           75m
+metrics-server                 0/2     2            0           75m
+
+C:\Users\Achyuth>kubectl get deploy -n kube-system metrics-server
+NAME             READY   UP-TO-DATE   AVAILABLE   AGE
+metrics-server   0/2     2            0           79m
+
+C:\Users\Achyuth>kubectl edit deploy -n kube-system metrics-server
+Edit cancelled, no changes made.
+
+C:\Users\Achyuth>
+C:\Users\Achyuth>kubectl get deploy -n kube-system
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+aws-load-balancer-controller   2/2     2            2           13m
+coredns                        2/2     2            2           81m
+metrics-server                 0/2     2            0           81m
+
+C:\Users\Achyuth>kubectl get ingress -n game-2048
+NAME           CLASS   HOSTS   ADDRESS                                                                  PORTS   AGE
+ingress-2048   alb     *       k8s-game2048-ingress2-ec64081896-176461752.us-east-1.elb.amazonaws.com   80      49m
+
+C:\Users\Achyuth>kubectl get deploy -n kube-system
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+aws-load-balancer-controller   2/2     2            2           25m
+coredns                        2/2     2            2           93m
+metrics-server                 0/2     2            0           93m
+
+C:\Users\Achyuth>
+
